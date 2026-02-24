@@ -2,14 +2,10 @@ import numpy as np
 from ripser import ripser
 import matplotlib.pyplot as plt
 from persim import plot_diagrams
-
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-from persim import plot_diagrams
 
 BARCODE_DIR = "barcodes"
-BASE_NAME = "fish-5" 
+BASE_NAME = "Heart-7" 
 
 print(f"Reading barcodes for: {BASE_NAME}")
 
@@ -40,6 +36,12 @@ else:
     print(f"Warning: {h1_path} not found.")
     diagrams.append(np.empty((0, 2)))
 
-plot_diagrams(diagrams, show=True)
+plot_diagrams(diagrams, show=False)
 
+# Save the figure to the data directory before showing
+output_filename = f"{BASE_NAME}_barcodes.png"
+output_path = os.path.join("data", output_filename)
+plt.savefig(output_path, bbox_inches='tight')
+print(f"Saved barcode image to: {output_path}")
 
+plt.show()

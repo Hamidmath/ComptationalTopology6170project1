@@ -22,22 +22,29 @@ The following details the execution order of the scripts, showing precisely whic
 \textbf{\texttt{make\_manifest.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} Raw image files (\texttt{.gif}) from the \texttt{SelectedSubset/} directory.
-    \item \textbf{[WRITES]} A manifest file list to \texttt{data/selected\_files.txt}.
+    \item \textbf{[WRITES]} A manifest file list to \texttt{selected\_files.txt}.
     \item \textbf{[DESC]} Scans the image dataset and creates a consistent list of selected files mapped to their object classes.
 \end{itemize}
 
 \subsection*{Step 2: Boundary Extraction}
 \textbf{\texttt{extract\_all\_boundaries.py}}
 \begin{itemize}[label={}]
-    \item \textbf{[READS]} The manifest from \texttt{data/selected\_files.txt} and images from \texttt{SelectedSubset/}.
+    \item \textbf{[READS]} The manifest from \texttt{selected\_files.txt} and images from \texttt{SelectedSubset/}.
     \item \textbf{[WRITES]} \texttt{(x, y)} coordinate boundary arrays to the \texttt{txtfiles/} directory (\texttt{*\_points.txt}).
     \item \textbf{[DESC]} Binarizes each shape image, extracts the outermost contour boundary, and saves the 2D point cloud.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{draw\_boundary.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} A specific boundary file from \texttt{txtfiles/}.
     \item \textbf{[DESC]} A simple utility to visualize a 2D point cloud boundary of a single shape to verify successful extraction.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.3\linewidth]{Heart-7_points.png}
+        \includegraphics[width=0.3\linewidth]{Heart-7.png}
+        \caption{Heart-7: boundary extraction}
+        \label{fig:placeholder}
+    \end{figure}
 \end{itemize}
 
 \subsection*{Step 3: Persistent Homology Computation}
@@ -47,25 +54,31 @@ The following details the execution order of the scripts, showing precisely whic
     \item \textbf{[WRITES]} Topological barcodes (H0 and H1 components) to the \texttt{barcodes/} directory (\texttt{*\_H0.txt} and \texttt{*\_H1.txt}).
     \item \textbf{[DESC]} Runs the \texttt{ripser} library on the point clouds to compute their persistent homology up to dimension 1.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{draw\_ripser\_barcodes.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} A set of barcode files for a specific shape from \texttt{barcodes/}.
     \item \textbf{[DESC]} Visualization utility to plot the H0 and H1 persistence diagrams for a single shape.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.3\linewidth]{Heart-7_barcodes.png}
+        \caption{Heart-7: barcode}
+        \label{fig:placeholder}
+    \end{figure}
 \end{itemize}
 
 \subsection*{Step 4: Distance Computation}
 \textbf{\texttt{compute\_H0\_bottleneck\_parallel.py}} / \textbf{\texttt{compute\_H1\_bottleneck\_parallel.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} H0 or H1 barcodes respectively from the \texttt{barcodes/} directory.
-    \item \textbf{[WRITES]} Bottleneck distance matrices and file orders to the \texttt{data/} directory (\texttt{dist\_H0\_bottleneck.npy}, \texttt{H0\_bottleneck\_file\_order.npy}, etc.).
+    \item \textbf{[WRITES]} Bottleneck distance matrices and file orders to the \texttt{} directory (\texttt{dist\_H0\_bottleneck.npy}, \texttt{H0\_bottleneck\_file\_order.npy}, etc.).
     \item \textbf{[DESC]} Computes pairwise bottleneck distances between topological barcodes in parallel.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{compute\_H0\_wasserstein\_parallel.py}} / \textbf{\texttt{compute\_H1\_wasserstein\_parallel.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} H0 or H1 barcodes respectively from the \texttt{barcodes/} directory.
-    \item \textbf{[WRITES]} Wasserstein distance matrices and file orders to the \texttt{data/} directory.
+    \item \textbf{[WRITES]} Wasserstein distance matrices and file orders to the \texttt{} directory.
     \item \textbf{[DESC]} Computes pairwise Wasserstein distances between topological barcodes in parallel.
 \end{itemize}
 
@@ -73,21 +86,21 @@ The following details the execution order of the scripts, showing precisely whic
 \textbf{\texttt{raw\_image\_baseline.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} Raw image files from \texttt{SelectedSubset/}.
-    \item \textbf{[WRITES]} Euclidean distance baseline matrix (\texttt{data/dist\_raw\_euclidean.npy}) and baseline MDS/t-SNE plots (\texttt{data/mds\_raw\_images.png}, \texttt{data/tsne\_raw\_images.png}).
+    \item \textbf{[WRITES]} Euclidean distance baseline matrix (\texttt{dist\_raw\_euclidean.npy}) and baseline MDS/t-SNE plots (\texttt{mds\_raw\_images.png}, \texttt{tsne\_raw\_images.png}).
     \item \textbf{[DESC]} Evaluates a non-topological baseline by computing Euclidean distances between flattened raw pixels and visualizing the embeddings.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{mds\_*.py}} \textit{(H0/H1, Bottleneck/Wasserstein)}
 \begin{itemize}[label={}]
-    \item \textbf{[READS]} Pre-computed distance matrices and file orders from the \texttt{data/} directory.
-    \item \textbf{[WRITES]} 2D MDS scatter plot images to the \texttt{data/} directory (e.g., \texttt{mds\_H0\_bottleneck.png}).
+    \item \textbf{[READS]} Pre-computed distance matrices and file orders from the \texttt{} directory.
+    \item \textbf{[WRITES]} 2D MDS scatter plot images to the \texttt{} directory (e.g., \texttt{mds\_H0\_bottleneck.png}).
     \item \textbf{[DESC]} Applies Multi-Dimensional Scaling (MDS) to layout the shapes based on their topological distances.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{tsne\_from\_distance.py}} / \textbf{\texttt{tsne\_*.py}}
 \begin{itemize}[label={}]
-    \item \textbf{[READS]} A specific topological distance matrix from the \texttt{data/} directory.
-    \item \textbf{[WRITES]} 2D t-SNE scatter plot images to the \texttt{data/} directory (e.g., \texttt{tsne\_H0\_bottleneck.png}).
+    \item \textbf{[READS]} A specific topological distance matrix from the \texttt{} directory.
+    \item \textbf{[WRITES]} 2D t-SNE scatter plot images to the \texttt{} directory (e.g., \texttt{tsne\_H0\_bottleneck.png}).
     \item \textbf{[DESC]} Applies t-SNE for an alternative clustering visualization of the distance matrix.
 \end{itemize}
 
@@ -97,14 +110,14 @@ The following details the execution order of the scripts, showing precisely whic
     \item \textbf{[READS]} H1 barcodes from the \texttt{barcodes/} directory.
     \item \textbf{[DESC]} Converts persistence diagrams into grid-based Persistence Images and trains an SVM classifier to predict shape categories.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{kernel\_svm\_persistence\_scale\_space.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} H1 barcodes from the \texttt{barcodes/} directory.
     \item \textbf{[WRITES]} Computed Persistence Scale Space kernels, class labels, and file lists to the \texttt{results\_kernel/} directory.
     \item \textbf{[DESC]} Computes topological kernel matrices directly from barcodes and trains an SVM. Saves the kernels for further analysis.
 \end{itemize}
-
+\noindent
 \textbf{\texttt{kernel\_rep.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} Kernel matrices (\texttt{K\_*.npy}) and label/file data from the \texttt{results\_kernel/} directory.
@@ -119,12 +132,12 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/mds_raw_images.png"}
+        \includegraphics[width=\linewidth]{"mds_raw_images.png"}
         \caption{MDS Projection - Raw Images}
     \end{minipage}\hfill
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/tsne_raw_images.png"}
+        \includegraphics[width=\linewidth]{"tsne_raw_images.png"}
         \caption{t-SNE Projection - Raw Images}
     \end{minipage}
 \end{figure}
@@ -135,12 +148,12 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/mds_H0_bottleneck.png"}
+        \includegraphics[width=\linewidth]{"mds_H0_bottleneck.png"}
         \caption{MDS Projection - H0 Bottleneck}
     \end{minipage}\hfill
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/tsne_H0_bottleneck.png"}
+        \includegraphics[width=\linewidth]{"tsne_H0_bottleneck.png"}
         \caption{t-SNE Projection - H0 Bottleneck}
     \end{minipage}
 \end{figure}
@@ -150,12 +163,12 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/mds_H0_wasserstein.png"}
+        \includegraphics[width=\linewidth]{"mds_H0_wasserstein.png"}
         \caption{MDS Projection - H0 Wasserstein}
     \end{minipage}\hfill
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/tsne_H0_wasserstein.png"}
+        \includegraphics[width=\linewidth]{"tsne_H0_wasserstein.png"}
         \caption{t-SNE Projection - H0 Wasserstein}
     \end{minipage}
 \end{figure}
@@ -166,12 +179,12 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/mds_H1_bottleneck.png"}
+        \includegraphics[width=\linewidth]{"mds_H1_bottleneck.png"}
         \caption{MDS Projection - H1 Bottleneck}
     \end{minipage}\hfill
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/tsne_H1_bottleneck.png"}
+        \includegraphics[width=\linewidth]{"tsne_H1_bottleneck.png"}
         \caption{t-SNE Projection - H1 Bottleneck}
     \end{minipage}
 \end{figure}
@@ -181,12 +194,12 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/mds_H1_wasserstein.png"}
+        \includegraphics[width=\linewidth]{"mds_H1_wasserstein.png"}
         \caption{MDS Projection - H1 Wasserstein}
     \end{minipage}\hfill
     \begin{minipage}{0.45\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{"data/tsne_H1_wasserstein.png"}
+        \includegraphics[width=\linewidth]{"tsne_H1_wasserstein.png"}
         \caption{t-SNE Projection - H1 Wasserstein}
     \end{minipage}
 \end{figure}
