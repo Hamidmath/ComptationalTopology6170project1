@@ -205,20 +205,33 @@ Below are the resulting MDS and t-SNE projections from the generated distance ma
 \end{figure}
 
 \subsubsection*{Comparison Analysis}
-\textbf{Raw vs. Topology:} The baseline embeddings (Raw Images using Euclidean distance on pixels) show heavily scattered classes because raw pixels are highly sensitive to translation, rotation, and slight deformations. The topological embeddings, particularly \textbf{H1 Wasserstein}, demonstrate much tighter clustering for specific classes. Topological features possess deformation and rotation invariance, making them inherently better suited for distinguishing underlying shape morphologies than rigid pixel grids.
+Visual inspection of the embeddings reveals distinct behaviors across the different distance metrics and projection techniques:
+\begin{itemize}
+    \item \textbf{Baseline (Raw Images):} Surprisingly, the raw pixel-wise Euclidean distance produced recognizable clustering, with raw t-SNE showing better visual separation of classes than MDS.
+    \item \textbf{H0 Features (Connected Components):} The Bottleneck distance spread the points uniformly in the MDS projection, while its t-SNE counterpart packed everything too closely, making it difficult to recognize meaningful clustering in either. The Wasserstein distance for H0 showed slight improvements over Bottleneck but remained ambiguous.
+    \item \textbf{H1 Features (1-Dimensional Holes):} The Bottleneck distance for H1 yielded no meaningful visual clusters in neither MDS nor t-SNE. Conversely, the H1 Wasserstein distance showed the most promise among topological methods, with some clusters becoming weakly recognizable in both MDS and t-SNE projections.
+\end{itemize}
 
 \section{Classification Results (Support Vector Machines)}
-Two different approaches were used to classify the shapes (8 classes test subset) using topological features.
+To formally evaluate the discriminative power of the topological features, we trained Support Vector Machines (SVM) on the persistence diagrams. We evaluated the performance on two subsets of the data: a simpler 4-class problem and a more complex 8-class problem. Two different vectorization/kernel approaches were used.
 
 \subsection*{1. Persistence Images (Grid Feature Vectors)}
-\textbf{Accuracy: 25.0\%} \\
-Converting the diagrams into fixed-size grid matrices allows for standard linear SVM classification, but resulted in poor accuracy due to the loss of exact spatial geometry and sparse information distribution across the high-dimensional (2288) feature space.
+Converting the diagrams into fixed-size grid matrices allows for standard linear SVM classification, but resulted in poor accuracy due to the loss of exact spatial geometry and sparse information distribution across the high-dimensional feature space.
+\begin{itemize}
+    \item \textbf{4-Class Accuracy:} 33.3\%
+    \item \textbf{8-Class Accuracy:} 25.0\%
+\end{itemize}
 
 \subsection*{2. Persistence Scale Space Kernel (Direct Diagram Comparison)}
-\textbf{Accuracy: 62.5\%} \\
 Using a computed topological Gram matrix directly as a Custom SVM kernel dramatically improves performance. This method bypasses grid approximation and computes exact mathematical similarities between the born/die cycles of the shapes across scale spaces.
+\begin{itemize}
+    \item \textbf{4-Class Accuracy:} 83.3\%
+    \item \textbf{8-Class Accuracy:} 62.5\%
+\end{itemize}
 
 \subsubsection*{Interpretation of Accuracies}
-The jump from 25\% (Images) to 62.5\% (Kernel) highlights a critical truth in Topological Data Analysis (TDA). While vectorization (Persistence Images) is computationally convenient, it fundamentally degrades the structural purity of the barcodes. The \textbf{Scale Space Kernel} preserves the exact distances between topological features, allowing the SVM to find much richer decision boundaries. The classes \texttt{device8} (100\% f1-score) and \texttt{device0} (80\%) were perfectly or near-perfectly recognized by the kernel, indicating their topological signatures (number and lifespan of loops) are highly unique compared to the rest of the dataset.
+The significant jump in accuracy from Persistence Images (33.3\% $\rightarrow$ 83.3\% for 4-class, and 25.0\% $\rightarrow$ 62.5\% for 8-class) highlights a critical truth in Topological Data Analysis (TDA). While vectorization via Persistence Images is computationally convenient, it fundamentally degrades the structural purity of the barcodes. The \textbf{Scale Space Kernel} preserves the exact distances between topological features, allowing the SVM to find much richer decision boundaries. 
+
+The drop in performance from the 4-class subset to the 8-class subset indicates that while the topological signatures cleanly separate distinctly different shapes (like `cup' and `device8'), adding more classes introduces shapes with overlapping topological properties (e.g., similar numbers of loops with similar lifespans), making the classification boundary more difficult to resolve definitively.
 
 \end{document}
