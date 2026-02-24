@@ -30,7 +30,13 @@ try:
         plt.title(f"Boundary Point Cloud: {FILE_NAME}")
         plt.axis('equal')
         plt.legend()
+        
+        # Save the figure to the data directory before showing
+        output_filename = os.path.splitext(FILE_NAME)[0] + ".png"
+        output_path = os.path.join("data", output_filename)
+        plt.savefig(output_path, bbox_inches='tight')
+        print(f"Saved boundary image to: {output_path}")
+        
         plt.show()
-
 except Exception as e:
     print(f"Error: {e}")
