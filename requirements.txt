@@ -1,0 +1,9 @@
+numpy
+ripser
+step
+tqdm
+scikit-learn
+matplotlib
+persim
+opencv-python-headless
+Pillow

@@ -1,0 +1,19 @@
+Accuracy: 0.8333333333333334
+
+Classification report:
+              precision    recall  f1-score   support
+
+         cup       1.00      1.00      1.00         3
+     device0       1.00      0.67      0.80         3
+        fish       1.00      0.67      0.80         3
+    flatfish       0.60      1.00      0.75         3
+
+    accuracy                           0.83        12
+   macro avg       0.90      0.83      0.84        12
+weighted avg       0.90      0.83      0.84        12
+
+Confusion matrix:
+3 0 0 0
+0 2 0 1
+0 0 2 1
+0 0 0 3
