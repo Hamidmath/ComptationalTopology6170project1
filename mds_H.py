@@ -1,10 +1,9 @@
-import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
+from sklearn.manifold import MDS
 
-parser = argparse.ArgumentParser(description="Compute t-SNE Embeddings from Topological Distances")
+parser = argparse.ArgumentParser(description="Compute MDS Embeddings from Topological Distances")
 parser.add_argument("--mode", type=str, required=True, choices=["h0b", "h0w", "h1b", "h1w"], 
                     help="Mode mapping: h0b = H0 Bottleneck, h0w = H0 Wasserstein, h1b = H1 Bottleneck, h1w = H1 Wasserstein")
 args = parser.parse_args()
@@ -13,60 +12,56 @@ args = parser.parse_args()
 if args.mode == 'h0b':
     dim = 'H0'
     metric = 'bottleneck'
-    TITLE = "t-SNE — H0 Bottleneck"
+    title = "MDS — H0 Bottleneck"
 elif args.mode == 'h0w':
     dim = 'H0'
     metric = 'wasserstein'
-    TITLE = "t-SNE — H0 Wasserstein"
+    title = "MDS — H0 Wasserstein"
 elif args.mode == 'h1b':
     dim = 'H1'
     metric = 'bottleneck'
-    TITLE = "t-SNE — H1 Bottleneck"
+    title = "MDS — H1 Bottleneck"
 elif args.mode == 'h1w':
     dim = 'H1'
     metric = 'wasserstein'
-    TITLE = "t-SNE — H1 Wasserstein"
+    title = "MDS — H1 Wasserstein"
 
-DIST_PATH = f"data/dist_{dim}_{metric}.npy"
-ORDER_PATH = f"data/{dim}_{metric}_file_order.npy"
-OUT_NAME = f"tsne_{dim}_{metric}.png"
+dist_file = f"data/dist_{dim}_{metric}.npy"
+order_file = f"data/{dim}_{metric}_file_order.npy"
+out_png = f"data/mds_{dim}_{metric}.png"
 
-
-dist_matrix = np.load(DIST_PATH)
-files = np.load(ORDER_PATH)
+dist_matrix = np.load(dist_file)
+files = np.load(order_file)
 
 print(f"Matrix shape for {args.mode}:", dist_matrix.shape)
 
-# t-SNE
-tsne = TSNE(
+mds = MDS(
     n_components=2,
-    metric="precomputed",
-    perplexity=20,          # good for n=80
+    metric=True,
+    dissimilarity="precomputed",
     random_state=42,
-    init="random"
+    n_init=4
 )
 
-embedding = tsne.fit_transform(dist_matrix)
+embedding = mds.fit_transform(dist_matrix)
 
-print("Embedding shape:", embedding.shape)
-
-# Extract labels
 labels = [f.split("-")[0] for f in files]
 unique_classes = sorted(set(labels))
 class_to_int = {c: i for i, c in enumerate(unique_classes)}
 colors = [class_to_int[l] for l in labels]
 
-# Plot
+
 plt.figure(figsize=(8,8))
+
 scatter = plt.scatter(
-    embedding[:,0],
-    embedding[:,1],
+    embedding[:, 0],
+    embedding[:, 1],
     c=colors,
     cmap="tab10",
     s=40
 )
 
-plt.title(TITLE)
+plt.title(title)
 plt.xlabel("Component 1")
 plt.ylabel("Component 2")
 
@@ -74,7 +69,6 @@ cbar = plt.colorbar(scatter, ticks=range(len(unique_classes)))
 cbar.set_ticklabels(unique_classes)
 
 plt.tight_layout()
-plt.savefig(f"data/{OUT_NAME}", dpi=300)
+plt.savefig(out_png, dpi=300)
 # plt.show() # Commented out so it does not block the pipeline script
-
-print("Saved:", OUT_NAME)
+print(f"Saved {out_png}")

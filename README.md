@@ -2,6 +2,10 @@
 
 This document explains the order in which to run the scripts in this project, describing what each script does, what data it reads, and what data it outputs.
 
+**0. Automated Pipeline Runner**
+- `run_full_pipeline.py`
+  - **Description:** A master script that automatically cleans old results and executes the entire pipeline sequentially (from boundary extraction through distance matrix computation, plotting, and machine learning) for both 4-class and 8-class modes.
+
 **1. Data Preparation**
 - `make_manifest.py`
   - **Reads:** Raw image files (`.gif`) from the `SelectedSubset/` directory.
@@ -21,30 +25,26 @@ This document explains the order in which to run the scripts in this project, de
 - `compute_all_barcodes.py`
   - **Reads:** Boundary coordinate files from `txtfiles/` (`*_points.txt`).
   - **Writes:** Topological barcodes (H0 and H1 components) to the `barcodes/` directory (`*_H0.txt` and `*_H1.txt`).
-  - **Description:** Runs the `ripser` library on the point clouds to compute their persistent homology up to dimension 1.
+  - **Description:** Normalizes the point clouds by their diagonal, then runs the `ripser` library to compute their persistent homology up to dimension 1.
 - `draw_ripser_barcodes.py`
   - **Reads:** A set of barcode files for a specific shape from `barcodes/`.
   - **Description:** A visualization utility to plot the H0 and H1 persistence diagrams for a single shape.
 
 **4. Distance Computation**
-- `compute_H0_bottleneck_parallel.py` / `compute_H1_bottleneck_parallel.py`
+- `compute_H.py`
   - **Reads:** H0 or H1 barcodes respectively from the `barcodes/` directory.
-  - **Writes:** Bottleneck distance matrices and file orders to the `data/` directory (`dist_H0_bottleneck.npy`, `H0_bottleneck_file_order.npy`, etc.).
-  - **Description:** Computes pairwise bottleneck distances between topological barcodes in parallel.
-- `compute_H0_wasserstein_parallel.py` / `compute_H1_wasserstein_parallel.py`
-  - **Reads:** H0 or H1 barcodes respectively from the `barcodes/` directory.
-  - **Writes:** Wasserstein distance matrices and file orders to the `data/` directory.
-  - **Description:** Computes pairwise Wasserstein distances between topological barcodes in parallel.
+  - **Writes:** Bottleneck or Wasserstein distance matrices and file orders to the `data/` directory (e.g., `dist_H0_bottleneck.npy`, `H1_wasserstein_file_order.npy`).
+  - **Description:** A unified, highly-optimized parallel script. Computes pairwise distances between topological barcodes for a given metric depending on the `--mode` argument passed (`h0b`, `h0w`, `h1b`, `h1w`). 
 
 **5. Embedding & Visualization**
-- `mds_H0_bottleneck.py` / `mds_H1_bottleneck.py` / `mds_H0_wasserstein.py` / `mds_H1_wasserstein.py`
+- `mds_H.py`
   - **Reads:** Pre-computed distance matrices and file orders from the `data/` directory.
   - **Writes:** 2D MDS scatter plot images to the `data/` directory (e.g., `mds_H0_bottleneck.png`).
-  - **Description:** Applies Multi-Dimensional Scaling (MDS) to layout the shapes based on their topological distances and plots the results colored by class.
+  - **Description:** A unified script that applies Multi-Dimensional Scaling (MDS) to layout the shapes based on their topological distances and plots the results colored by class. Operated via the `--mode` flag.
 - `tsne_from_distance.py`
-  - **Reads:** A specific topological distance matrix (e.g., H1 Wasserstein) from the `data/` directory.
+  - **Reads:** Pre-computed distance matrices and file orders from the `data/` directory.
   - **Writes:** A 2D t-SNE scatter plot image to the `data/` directory.
-  - **Description:** Applies t-SNE for an alternative clustering visualization of the distance matrix.
+  - **Description:** Applies t-SNE for an alternative clustering visualization of the distance matrix. Operated via the `--mode` flag.
 
 **6. Baselines & Machine Learning**
 - `raw_image_baseline.py`

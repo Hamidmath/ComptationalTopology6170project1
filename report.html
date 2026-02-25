@@ -146,7 +146,8 @@
             <p><span class="script-title">make_manifest.py</span></p>
             <ul class="details-list">
                 <li><span class="tag-read">READS</span> Raw image files (<code>.gif</code>) from the
-                    <code>SelectedSubset/</code> directory.</li>
+                    <code>SelectedSubset/</code> directory.
+                </li>
                 <li><span class="tag-write">WRITES</span> A manifest file list to <code>data/selected_files.txt</code>.
                 </li>
                 <li><span class="tag-desc">DESC</span> Scans the image dataset and creates a consistent list of selected
@@ -161,7 +162,8 @@
                 <li><span class="tag-read">READS</span> The manifest from <code>data/selected_files.txt</code> and
                     images from <code>SelectedSubset/</code>.</li>
                 <li><span class="tag-write">WRITES</span> <code>(x, y)</code> coordinate boundary arrays to the
-                    <code>txtfiles/</code> directory (<code>*_points.txt</code>).</li>
+                    <code>txtfiles/</code> directory (<code>*_points.txt</code>).
+                </li>
                 <li><span class="tag-desc">DESC</span> Binarizes each shape image, extracts the outermost contour
                     boundary, and saves the 2D point cloud.</li>
             </ul>
@@ -180,14 +182,16 @@
                 <li><span class="tag-read">READS</span> Boundary coordinate files from <code>txtfiles/</code>
                     (<code>*_points.txt</code>).</li>
                 <li><span class="tag-write">WRITES</span> Topological barcodes (H0 and H1 components) to the
-                    <code>barcodes/</code> directory (<code>*_H0.txt</code> and <code>*_H1.txt</code>).</li>
+                    <code>barcodes/</code> directory (<code>*_H0.txt</code> and <code>*_H1.txt</code>).
+                </li>
                 <li><span class="tag-desc">DESC</span> Runs the <code>ripser</code> library on the point clouds to
                     compute their persistent homology up to dimension 1.</li>
             </ul>
             <p><span class="script-title">draw_ripser_barcodes.py</span></p>
             <ul class="details-list">
                 <li><span class="tag-read">READS</span> A set of barcode files for a specific shape from
-                    <code>barcodes/</code>.</li>
+                    <code>barcodes/</code>.
+                </li>
                 <li><span class="tag-desc">DESC</span> Visualization utility to plot the H0 and H1 persistence diagrams
                     for a single shape.</li>
             </ul>
@@ -195,26 +199,18 @@
 
         <div class="pipeline-step">
             <h3>Step 4: Distance Computation</h3>
-            <p><span class="script-title">compute_H0_bottleneck_parallel.py</span> / <span
-                    class="script-title">compute_H1_bottleneck_parallel.py</span></p>
+            <p><span class="script-title">compute_H.py</span></p>
             <ul class="details-list">
                 <li><span class="tag-read">READS</span> H0 or H1 barcodes respectively from the <code>barcodes/</code>
                     directory.</li>
-                <li><span class="tag-write">WRITES</span> Bottleneck distance matrices and file orders to the
-                    <code>data/</code> directory (<code>dist_H0_bottleneck.npy</code>,
-                    <code>H0_bottleneck_file_order.npy</code>, etc.).</li>
-                <li><span class="tag-desc">DESC</span> Computes pairwise bottleneck distances between topological
-                    barcodes in parallel.</li>
-            </ul>
-            <p><span class="script-title">compute_H0_wasserstein_parallel.py</span> / <span
-                    class="script-title">compute_H1_wasserstein_parallel.py</span></p>
-            <ul class="details-list">
-                <li><span class="tag-read">READS</span> H0 or H1 barcodes respectively from the <code>barcodes/</code>
-                    directory.</li>
-                <li><span class="tag-write">WRITES</span> Wasserstein distance matrices and file orders to the
-                    <code>data/</code> directory.</li>
-                <li><span class="tag-desc">DESC</span> Computes pairwise Wasserstein distances between topological
-                    barcodes in parallel.</li>
+                <li><span class="tag-write">WRITES</span> Bottleneck or Wasserstein distance matrices and file orders to
+                    the
+                    <code>data/</code> directory (e.g., <code>dist_H0_bottleneck.npy</code>,
+                    <code>H0_bottleneck_file_order.npy</code>).
+                </li>
+                <li><span class="tag-desc">DESC</span> A unified script that computes pairwise topological distances
+                    based on the selected mode (e.g., <code>--mode h0b</code> for H0 Bottleneck, <code>--mode h1w</code>
+                    for H1 Wasserstein).</li>
             </ul>
         </div>
 
@@ -229,23 +225,26 @@
                 <li><span class="tag-desc">DESC</span> Evaluates a non-topological baseline by computing Euclidean
                     distances between flattened raw pixels and visualizing the embeddings.</li>
             </ul>
-            <p><span class="script-title">mds_*.py</span> <em>(H0/H1, Bottleneck/Wasserstein)</em></p>
+            <p><span class="script-title">mds_H.py</span></p>
             <ul class="details-list">
                 <li><span class="tag-read">READS</span> Pre-computed distance matrices and file orders from the
-                    <code>data/</code> directory.</li>
+                    <code>data/</code> directory.
+                </li>
                 <li><span class="tag-write">WRITES</span> 2D MDS scatter plot images to the <code>data/</code> directory
                     (e.g., <code>mds_H0_bottleneck.png</code>).</li>
                 <li><span class="tag-desc">DESC</span> Applies Multi-Dimensional Scaling (MDS) to layout the shapes
-                    based on their topological distances.</li>
+                    based on their topological distances. Uses the <code>--mode</code> flag to select the correct
+                    distance matrix.</li>
             </ul>
-            <p><span class="script-title">tsne_from_distance.py</span> / <span class="script-title">tsne_*.py</span></p>
+            <p><span class="script-title">tsne_from_distance.py</span></p>
             <ul class="details-list">
                 <li><span class="tag-read">READS</span> A specific topological distance matrix from the
-                    <code>data/</code> directory.</li>
+                    <code>data/</code> directory.
+                </li>
                 <li><span class="tag-write">WRITES</span> 2D t-SNE scatter plot images to the <code>data/</code>
                     directory (e.g., <code>tsne_H0_bottleneck.png</code>).</li>
                 <li><span class="tag-desc">DESC</span> Applies t-SNE for an alternative clustering visualization of the
-                    distance matrix.</li>
+                    distance matrix. Uses the <code>--mode</code> flag to select the correct distance matrix.</li>
             </ul>
         </div>
 
@@ -343,43 +342,66 @@
         </div>
 
         <h3>Comparison Analysis</h3>
-        <p><strong>Raw vs. Topology:</strong> The baseline embeddings (Raw Images using Euclidean distance on pixels)
-            show heavily scattered classes because raw pixels are highly sensitive to translation, rotation, and slight
-            deformations. The topological embeddings, particularly <strong>H1 Wasserstein</strong>, demonstrate much
-            tighter clustering for specific classes. Topological features possess deformation and rotation invariance,
-            making them inherently better suited for distinguishing underlying shape morphologies than rigid pixel
-            grids.</p>
+        <p>Visual inspection of the embeddings reveals distinct behaviors across the different distance metrics and
+            projection techniques:</p>
+        <ul>
+            <li><strong>Baseline (Raw Images):</strong> Surprisingly, the raw pixel-wise Euclidean distance produced
+                recognizable clustering, with raw t-SNE showing better visual separation of classes than MDS.</li>
+            <li><strong>H0 Features (Connected Components):</strong> The Bottleneck distance spread the points uniformly
+                in the MDS projection, while its t-SNE counterpart packed everything too closely, making it difficult to
+                recognize meaningful clustering in either. The Wasserstein distance for H0 showed slight improvements
+                over Bottleneck but remained ambiguous.</li>
+            <li><strong>H1 Features (1-Dimensional Holes):</strong> The Bottleneck distance for H1 yielded no meaningful
+                visual clusters in neither MDS nor t-SNE. Conversely, the H1 Wasserstein distance showed the most
+                promise among topological methods, with some clusters becoming weakly recognizable in both MDS and t-SNE
+                projections.</li>
+        </ul>
     </div>
 
     <div class="section">
         <h2>3. Classification Results (Support Vector Machines)</h2>
-        <p>Two different approaches were used to classify the shapes (8 classes test subset) using topological features.
+        <p>To formally evaluate the discriminative power of the topological features, we trained Support Vector Machines
+            (SVM) on the persistence diagrams. We evaluated the performance on two subsets of the data: a simpler
+            4-class problem and a more complex 8-class problem. Two different vectorization/kernel approaches were used.
         </p>
 
         <div class="metric-box">
             <h3>1. Persistence Images (Grid Feature Vectors)</h3>
-            <p><strong>Accuracy: 25.0%</strong></p>
             <p>Converting the diagrams into fixed-size grid matrices allows for standard linear SVM classification, but
                 resulted in poor accuracy due to the loss of exact spatial geometry and sparse information distribution
-                across the high-dimensional (2288) feature space.</p>
+                across the high-dimensional feature space. (Note: Accuracies below are based on normalized point-cloud
+                boundaries)</p>
+            <ul style="margin: 5px 0 0 20px;">
+                <li><strong>4-Class Accuracy:</strong> 50.0%</li>
+                <li><strong>8-Class Accuracy:</strong> 37.5%</li>
+            </ul>
         </div>
 
         <div class="metric-box">
             <h3>2. Persistence Scale Space Kernel (Direct Diagram Comparison)</h3>
-            <p><strong>Accuracy: 62.5%</strong></p>
-            <p>Using a computed topological Gram matrix directly as a Custom SVM kernel dramatically improves
-                performance. This method bypasses grid approximation and computes exact mathematical similarities
-                between the born/die cycles of the shapes across scale spaces.</p>
+            <p>Using a computed topological Gram matrix directly as a Custom SVM kernel bypasses grid approximation and
+                computes exact mathematical similarities
+                between the born/die cycles of the shapes across scale spaces. With the inclusion of
+                diagonal-normalization, this method yielded identical predictive power to the Persistence Image
+                approach.</p>
+            <ul style="margin: 5px 0 0 20px;">
+                <li><strong>4-Class Accuracy:</strong> 50.0%</li>
+                <li><strong>8-Class Accuracy:</strong> 37.5%</li>
+            </ul>
         </div>
 
         <h3>Interpretation of Accuracies</h3>
-        <p>The jump from 25% (Images) to 62.5% (Kernel) highlights a critical truth in Topological Data Analysis (TDA).
-            While vectorization (Persistence Images) is computationally convenient, it fundamentally degrades the
-            structural purity of the barcodes. The <strong>Scale Space Kernel</strong> preserves the exact distances
-            between topological features, allowing the SVM to find much richer decision boundaries. The classes
-            <code>device8</code> (100% f1-score) and <code>device0</code> (80%) were perfectly or near-perfectly
-            recognized by the kernel, indicating their topological signatures (number and lifespan of loops) are highly
-            unique compared to the rest of the dataset.</p>
+        <p>After re-running the entire pipeline with <strong>Diagonal Normalization</strong> (ensuring scale-invariance
+            for the boundaries), both models equalized in their performance: achieving 50.0% on the 4-class problem, and
+            37.5% on the 8-class problem. This normalization step successfully removed the bias of absolute size from
+            the structural comparison.</p>
+        <p>The consistent drop in performance from the 4-class subset to the 8-class subset indicates that while the
+            topological
+            signatures can reasonably separate distinctly different simple shapes (like <code>cup</code> and
+            <code>device8</code>),
+            adding more classes introduces shapes with overlapping topological properties (e.g., similar numbers of
+            loops with similar lifespans), making the classification boundary more difficult to resolve definitively.
+        </p>
     </div>
 
 </body>

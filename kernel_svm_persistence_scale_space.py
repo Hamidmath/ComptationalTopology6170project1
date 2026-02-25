@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
@@ -6,6 +7,9 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.preprocessing import LabelEncoder
 import time
 
+parser = argparse.ArgumentParser(description="Run Kernel SVM")
+parser.add_argument("--mode", type=str, choices=["4class", "8class"], default="8class", help="Classification mode")
+args = parser.parse_args()
 
 BARCODE_DIR = "barcodes"   # must contain *_H1.txt
 DIAG_SUFFIX = "_H1.txt"
@@ -13,7 +17,7 @@ OUT_DIR = "results_kernel"
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # Choose mode: "8class" or "4class"
-MODE = "8class"   # change to "4class" for 4-class run
+MODE = args.mode   # takes value from command line argument
 SELECTED_4 = ["cup", "device0", "fish", "flatfish"]  # used if MODE=="4class"
 
 # Kernel parameter (tuneable)

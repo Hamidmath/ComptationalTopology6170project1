@@ -3,6 +3,7 @@ import sys
 import argparse
 import multiprocessing
 import numpy as np
+from scipy.spatial.distance import pdist
 from ripser import ripser
 try:
     from tqdm import tqdm
@@ -19,6 +20,12 @@ files = sorted([f for f in os.listdir(POINTS_DIR) if f.endswith("_points.txt")])
 def process_file(f):
     path = os.path.join(POINTS_DIR, f)
     points = np.loadtxt(path)
+
+    # Calculate diagonal (max distance) and normalize points
+    if points.shape[0] > 1:
+        max_dist = np.max(pdist(points))
+        if max_dist > 0:
+            points = points / max_dist
 
     result = ripser(points, maxdim=1)
     diagrams = result["dgms"]
@@ -49,7 +56,7 @@ if __name__ == "__main__":
         print("No files to process.")
         sys.exit(0)
 
-    num_workers = 2
+    num_workers = 18
     print(f"Using {num_workers} cores")
 
     with multiprocessing.Pool(processes=num_workers, maxtasksperchild=1) as pool:
