@@ -68,18 +68,11 @@ The following details the execution order of the scripts, showing precisely whic
 \end{itemize}
 
 \subsection*{Step 4: Distance Computation}
-\textbf{\texttt{compute\_H0\_bottleneck\_parallel.py}} / \textbf{\texttt{compute\_H1\_bottleneck\_parallel.py}}
+\textbf{\texttt{compute\_H.py}}
 \begin{itemize}[label={}]
     \item \textbf{[READS]} H0 or H1 barcodes respectively from the \texttt{barcodes/} directory.
-    \item \textbf{[WRITES]} Bottleneck distance matrices and file orders to the \texttt{} directory (\texttt{dist\_H0\_bottleneck.npy}, \texttt{H0\_bottleneck\_file\_order.npy}, etc.).
-    \item \textbf{[DESC]} Computes pairwise bottleneck distances between topological barcodes in parallel.
-\end{itemize}
-\noindent
-\textbf{\texttt{compute\_H0\_wasserstein\_parallel.py}} / \textbf{\texttt{compute\_H1\_wasserstein\_parallel.py}}
-\begin{itemize}[label={}]
-    \item \textbf{[READS]} H0 or H1 barcodes respectively from the \texttt{barcodes/} directory.
-    \item \textbf{[WRITES]} Wasserstein distance matrices and file orders to the \texttt{} directory.
-    \item \textbf{[DESC]} Computes pairwise Wasserstein distances between topological barcodes in parallel.
+    \item \textbf{[WRITES]} Bottleneck or Wasserstein distance matrices and file orders to the \texttt{data/} directory (e.g., \texttt{dist\_H0\_bottleneck.npy}, \texttt{H0\_bottleneck\_file\_order.npy}).
+    \item \textbf{[DESC]} A unified script that computes pairwise topological distances based on the selected metric (\texttt{--mode h0b} for H0 Bottleneck, \texttt{--mode h1w} for H1 Wasserstein).
 \end{itemize}
 
 \subsection*{Step 5: Embedding \& Visualization}
@@ -90,18 +83,18 @@ The following details the execution order of the scripts, showing precisely whic
     \item \textbf{[DESC]} Evaluates a non-topological baseline by computing Euclidean distances between flattened raw pixels and visualizing the embeddings.
 \end{itemize}
 \noindent
-\textbf{\texttt{mds\_*.py}} \textit{(H0/H1, Bottleneck/Wasserstein)}
+\textbf{\texttt{mds\_H.py}}
 \begin{itemize}[label={}]
-    \item \textbf{[READS]} Pre-computed distance matrices and file orders from the \texttt{} directory.
-    \item \textbf{[WRITES]} 2D MDS scatter plot images to the \texttt{} directory (e.g., \texttt{mds\_H0\_bottleneck.png}).
-    \item \textbf{[DESC]} Applies Multi-Dimensional Scaling (MDS) to layout the shapes based on their topological distances.
+    \item \textbf{[READS]} Pre-computed distance matrices and file orders from the \texttt{data/} directory.
+    \item \textbf{[WRITES]} 2D MDS scatter plot images to the \texttt{data/} directory (e.g., \texttt{mds\_H0\_bottleneck.png}).
+    \item \textbf{[DESC]} Applies Multi-Dimensional Scaling (MDS) to layout the shapes based on their topological distances. Uses the \texttt{--mode} flag to select the correct distance matrix.
 \end{itemize}
 \noindent
-\textbf{\texttt{tsne\_from\_distance.py}} / \textbf{\texttt{tsne\_*.py}}
+\textbf{\texttt{tsne\_from\_distance.py}}
 \begin{itemize}[label={}]
-    \item \textbf{[READS]} A specific topological distance matrix from the \texttt{} directory.
-    \item \textbf{[WRITES]} 2D t-SNE scatter plot images to the \texttt{} directory (e.g., \texttt{tsne\_H0\_bottleneck.png}).
-    \item \textbf{[DESC]} Applies t-SNE for an alternative clustering visualization of the distance matrix.
+    \item \textbf{[READS]} A specific topological distance matrix from the \texttt{data/} directory.
+    \item \textbf{[WRITES]} 2D t-SNE scatter plot images to the \texttt{data/} directory (e.g., \texttt{tsne\_H0\_bottleneck.png}).
+    \item \textbf{[DESC]} Applies t-SNE for an alternative clustering visualization of the distance matrix. Uses the \texttt{--mode} flag to select the correct distance matrix.
 \end{itemize}
 
 \subsection*{Step 6: Baselines \& Machine Learning}
@@ -216,22 +209,22 @@ Visual inspection of the embeddings reveals distinct behaviors across the differ
 To formally evaluate the discriminative power of the topological features, we trained Support Vector Machines (SVM) on the persistence diagrams. We evaluated the performance on two subsets of the data: a simpler 4-class problem and a more complex 8-class problem. Two different vectorization/kernel approaches were used.
 
 \subsection*{1. Persistence Images (Grid Feature Vectors)}
-Converting the diagrams into fixed-size grid matrices allows for standard linear SVM classification, but resulted in poor accuracy due to the loss of exact spatial geometry and sparse information distribution across the high-dimensional feature space.
+Converting the diagrams into fixed-size grid matrices allows for standard linear SVM classification, but resulted in poor accuracy due to the loss of exact spatial geometry and sparse information distribution across the high-dimensional feature space. (Note: Accuracies below are based on normalized point-cloud boundaries).
 \begin{itemize}
-    \item \textbf{4-Class Accuracy:} 33.3\%
-    \item \textbf{8-Class Accuracy:} 25.0\%
+    \item \textbf{4-Class Accuracy:} 50.0\%
+    \item \textbf{8-Class Accuracy:} 37.5\%
 \end{itemize}
 
 \subsection*{2. Persistence Scale Space Kernel (Direct Diagram Comparison)}
-Using a computed topological Gram matrix directly as a Custom SVM kernel dramatically improves performance. This method bypasses grid approximation and computes exact mathematical similarities between the born/die cycles of the shapes across scale spaces.
+Using a computed topological Gram matrix directly as a Custom SVM kernel bypasses grid approximation and computes exact mathematical similarities between the born/die cycles of the shapes across scale spaces. With the inclusion of diagonal-normalization, this method yielded identical predictive power to the Persistence Image approach.
 \begin{itemize}
-    \item \textbf{4-Class Accuracy:} 83.3\%
-    \item \textbf{8-Class Accuracy:} 62.5\%
+    \item \textbf{4-Class Accuracy:} 50.0\%
+    \item \textbf{8-Class Accuracy:} 37.5\%
 \end{itemize}
 
 \subsubsection*{Interpretation of Accuracies}
-The significant jump in accuracy from Persistence Images (33.3\% $\rightarrow$ 83.3\% for 4-class, and 25.0\% $\rightarrow$ 62.5\% for 8-class) highlights a critical truth in Topological Data Analysis (TDA). While vectorization via Persistence Images is computationally convenient, it fundamentally degrades the structural purity of the barcodes. The \textbf{Scale Space Kernel} preserves the exact distances between topological features, allowing the SVM to find much richer decision boundaries. 
+After re-running the entire pipeline with \textbf{Diagonal Normalization} (ensuring scale-invariance for the boundaries), both models equalized in their performance: achieving 50.0\% on the 4-class problem, and 37.5\% on the 8-class problem. This normalization step successfully removed the bias of absolute size from the structural comparison.
 
-The drop in performance from the 4-class subset to the 8-class subset indicates that while the topological signatures cleanly separate distinctly different shapes (like `cup' and `device8'), adding more classes introduces shapes with overlapping topological properties (e.g., similar numbers of loops with similar lifespans), making the classification boundary more difficult to resolve definitively.
+The consistent drop in performance from the 4-class subset to the 8-class subset indicates that while the topological signatures can reasonably separate distinctly different simple shapes (like `cup' and `device8'), adding more classes introduces shapes with overlapping topological properties (e.g., similar numbers of loops with similar lifespans), making the classification boundary more difficult to resolve definitively.
 
 \end{document}
